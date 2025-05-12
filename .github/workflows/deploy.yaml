@@ -7,8 +7,8 @@ on:
   workflow_dispatch:
 
 env:
-  REPO_URL: ${{ github.server_url }}/${{ github.repository }}.git
-  REPO_NAME: ${{ github.event.repository.name }}
+  REPO_URL: https://github.com/MajedSaade/YoloServiceFursa.git
+  REPO_NAME: YoloServiceFursa
 
 jobs:
   Deploy:
@@ -21,24 +21,24 @@ jobs:
       - name: Configure SSH
         env:
           SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
-          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_HOST: ${{ secrets.YOLO_EC2_HOST }}
           EC2_USERNAME: ${{ secrets.EC2_USERNAME }}
         run: |
           mkdir -p ~/.ssh
           echo "$SSH_PRIVATE_KEY" > ~/.ssh/private_key
           chmod 600 ~/.ssh/private_key
           cat > ~/.ssh/config << EOF
-          Host ec2
+          Host yolo
               HostName $EC2_HOST
               User $EC2_USERNAME
               IdentityFile ~/.ssh/private_key
               StrictHostKeyChecking no
           EOF
 
-      - name: Copy script to EC2
+      - name: Clone or Pull Code on EC2
         run: |
-          ssh ec2 "if [ -d ~/${REPO_NAME} ]; then cd ~/${REPO_NAME} && git pull; else git clone ${REPO_URL} ~/${REPO_NAME}; fi"
+          ssh yolo "if [ -d ~/YoloServiceFursa ]; then cd ~/YoloServiceFursa && git pull; else git clone ${REPO_URL} ~/YoloServiceFursa; fi"
 
-      - name: Execute script on EC2
+      - name: Run Deployment Script on EC2
         run: |
-          ssh ec2 "cd $REPO_NAME && bash deploy.sh"
+          ssh yolo "cd ~/YoloServiceFursa && bash deploy.sh"
