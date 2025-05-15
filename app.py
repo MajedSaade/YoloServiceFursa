@@ -147,7 +147,7 @@ def get_prediction_by_uid(uid: str):
 @app.get("/predictions/label/{label}")
 def get_predictions_by_label(label: str):
     """
-    Get prediction sessions containing objects with specified label
+    Get prediction sessions containing objects with specified label/s
     """
     with sqlite3.connect(DB_PATH) as conn:
         conn.row_factory = sqlite3.Row
