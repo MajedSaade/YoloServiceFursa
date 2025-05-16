@@ -31,7 +31,7 @@ jobs:
         run: |
           mkdir -p ~/.ssh
           echo "$SSH_PRIVATE_KEY" > ~/.ssh/private_key
-          chmod 600 ~/.ssh/private_key
+          chmod 600 ~/.ssh/private_key  
           cat > ~/.ssh/config << EOF
           Host yolo
               HostName $EC2_HOST

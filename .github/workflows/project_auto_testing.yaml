@@ -1,0 +1,44 @@
+name: YOLO Service Auto-Testing
+
+on:
+  push:
+    branches:
+      - main
+      - feature/**
+
+jobs:
+  TestYoloService:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m venv venv
+          source venv/bin/activate
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Start YOLO FastAPI Service (background)
+        run: |
+          source venv/bin/activate
+          nohup python app.py &
+
+      - name: Wait for service to start
+        run: sleep 5
+
+      - name: Send test request to YOLO /predict
+        run: |
+          echo "🧪 Sending test image to YOLO service"
+          curl -X POST -F "file=@tests/test_image.jpg" http://127.0.0.1:8081/predict
+
+      - name: Check that service is responding
+        run: |
+          curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8081/predict | grep 200
