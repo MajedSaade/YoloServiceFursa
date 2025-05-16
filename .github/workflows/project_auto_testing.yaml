@@ -39,6 +39,8 @@ jobs:
           echo "🧪 Sending test image to YOLO service"
           curl -X POST -F "file=@tests/test_image.jpg" http://127.0.0.1:8081/predict
 
-      - name: Check that service is responding
+      - name: Check YOLO response code with image
         run: |
-          curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8081/predict | grep 200
+          code=$(curl -s -o /dev/null -w "%{http_code}" -X POST -F "file=@tests/test_image.jpg" http://127.0.0.1:8081/predict)
+          echo "HTTP response code: $code"
+          test "$code" -eq 200
