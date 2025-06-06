@@ -13,9 +13,9 @@ sudo apt-get install -y python3 python3-venv python3-pip wget
 echo "Setting up yolo.service..."
 sudo cp yolo.service /etc/systemd/system/
 
-# Reload systemd and restart the YOLO FastAPI service (will fail if app.py is not correct, that's ok)
+# Reload systemd and restart the YOLO FastAPI service (allow first fail if needed)
 sudo systemctl daemon-reload
-sudo systemctl restart yolo.service || true  # Allow it to fail first time
+sudo systemctl restart yolo.service || true
 sudo systemctl enable yolo.service
 
 # Setup Python virtual environment
@@ -29,6 +29,13 @@ fi
 echo "Activating virtual environment and installing requirements..."
 . .venv/bin/activate
 pip install --upgrade pip
+
+# STEP 1 — install CPU-only torch first
+echo "Installing CPU-only torch..."
+pip install --index-url https://download.pytorch.org/whl/cpu torch torchvision
+
+# STEP 2 — install the rest of the requirements (ultralytics, etc)
+echo "Installing remaining requirements..."
 pip install -r requirements.txt
 
 # Reload and restart YOLO service again (now venv is prepared)
