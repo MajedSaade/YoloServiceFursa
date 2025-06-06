@@ -3,13 +3,13 @@ Description=YOLO FastAPI Service
 After=network.target
 
 [Service]
-Type=simple
-User=ubuntu
 WorkingDirectory=/home/ubuntu/YoloServiceFursa
-ExecStart=/home/ubuntu/YoloServiceFursa/.venv/bin/python3 /home/ubuntu/YoloServiceFursa/app.py
-Restart=on-failure
-RestartSec=10
+ExecStart=/home/ubuntu/YoloServiceFursa/.venv/bin/python3 app.py
+Restart=always
+User=ubuntu
 Environment=PYTHONUNBUFFERED=1
+StandardOutput=journal
+StandardError=journal
 
 [Install]
 WantedBy=multi-user.target
