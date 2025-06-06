@@ -4,26 +4,46 @@ set -e  # Exit on any error
 
 echo "Deploying YOLO FastAPI service..."
 
-# Replace `yolo.service` if it's named differently
+# Install system dependencies (safe for new EC2 or old)
+echo "Installing system dependencies..."
+sudo apt-get update
+sudo apt-get install -y python3 python3-venv python3-pip wget
+
+# Setup yolo.service
 echo "Setting up yolo.service..."
 sudo cp yolo.service /etc/systemd/system/
 
-# Reload systemd and restart the YOLO FastAPI service
+# Reload systemd and restart the YOLO FastAPI service (will fail if app.py is not correct, that's ok)
 sudo systemctl daemon-reload
-sudo systemctl restart yolo.service
+sudo systemctl restart yolo.service || true  # Allow it to fail first time
 sudo systemctl enable yolo.service
 
-# Check if the YOLO service is active
+# Setup Python virtual environment
+echo "Setting up Python virtual environment..."
+cd ~/YoloServiceFursa
+if [ ! -d ".venv" ]; then
+    echo "Creating new virtual environment..."
+    python3 -m venv .venv
+fi
+
+echo "Activating virtual environment and installing requirements..."
+. .venv/bin/activate
+pip install --upgrade pip
+pip install -r requirements.txt
+
+# Reload and restart YOLO service again (now venv is prepared)
+echo "Restarting yolo.service..."
+sudo systemctl restart yolo.service
+
+# Check if YOLO service is active
 if ! systemctl is-active --quiet yolo.service; then
   echo "❌ yolo.service is not running."
   sudo systemctl status yolo.service --no-pager
   exit 1
 fi
-
 echo "✅ yolo.service is running successfully."
 
 # --- OpenTelemetry Collector installation and setup ---
-
 echo "Installing OpenTelemetry Collector..."
 wget https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v0.127.0/otelcol_0.127.0_linux_amd64.deb
 sudo dpkg -i otelcol_0.127.0_linux_amd64.deb
@@ -74,7 +94,7 @@ sudo systemctl daemon-reload
 sudo systemctl enable otelcol
 sudo systemctl restart otelcol
 
-# Check if the otelcol service is active
+# Check if otelcol service is active
 if ! systemctl is-active --quiet otelcol.service; then
   echo "❌ otelcol.service is not running."
   sudo systemctl status otelcol.service --no-pager
