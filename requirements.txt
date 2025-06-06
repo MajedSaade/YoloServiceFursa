@@ -5,6 +5,6 @@ uvicorn>=0.21.1
 # Pillow for image handling
 pillow>=9.5.0
 
-# Ultralytics YOLOv8 (includes minimal dependencies)
+# Ultralytics YOLOv8 (CPU version is fine, ultralytics depends on torch but respects pip index)
 ultralytics>=8.0.0
 python-multipart>=0.0.6

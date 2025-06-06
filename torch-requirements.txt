@@ -1,5 +1,5 @@
-# CPU-only PyTorch and related packages
+# Force CPU-only PyTorch
+--index-url https://download.pytorch.org/whl/cpu
+
 torch
 torchvision
-# Use the correct index for CPU versions of torch
---index-url https://download.pytorch.org/whl/cpu
