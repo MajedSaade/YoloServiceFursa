@@ -13,6 +13,7 @@ sudo apt-get clean
 echo "Installing system dependencies..."
 sudo apt-get update
 sudo apt-get install -y python3 python3-venv python3-pip wget
+sudo apt-get install -y libgl1
 
 # Setup yolo.service
 echo "Setting up yolo.service..."
