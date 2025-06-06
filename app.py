@@ -13,6 +13,8 @@ torch.cuda.is_available = lambda: False
 
 app = FastAPI()
 
+#hii
+
 UPLOAD_DIR = "uploads/original"
 PREDICTED_DIR = "uploads/predicted"
 DB_PATH = "predictions.db"
