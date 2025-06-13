@@ -1,49 +1,94 @@
-name: Yolo Deploy
+name: YoloService Deploy Prod
 
 on:
-  push:
-    branches:
-     - main
-  pull_request:
-      branches:
-        - main
-
-  workflow_dispatch:
-
-
-env:
-  REPO_URL: https://github.com/MajedSaade/YoloServiceFursa.git
-  REPO_NAME: YoloServiceFursa
+  workflow_call:
+    inputs:
+      image:
+        required: true
+        type: string
+    secrets:
+      DOCKERHUB_USERNAME:
+        required: true
+      DOCKERHUB_TOKEN:
+        required: true
+      EC2_SSH_KEY:
+        required: true
+      YOLO_EC2_HOST_PROD:
+        required: true
+      EC2_USERNAME:
+        required: true
 
 jobs:
-  Deploy:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Configure SSH
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
-          EC2_HOST: ${{ secrets.YOLO_EC2_HOST }}
-          EC2_USERNAME: ${{ secrets.EC2_USERNAME }}
+      - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
-          echo "$SSH_PRIVATE_KEY" > ~/.ssh/private_key
-          chmod 600 ~/.ssh/private_key
-          cat > ~/.ssh/config << EOF
-          Host yolo
-              HostName $EC2_HOST
-              User $EC2_USERNAME
-              IdentityFile ~/.ssh/private_key
-              StrictHostKeyChecking no
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.YOLO_EC2_HOST_PROD }} >> ~/.ssh/known_hosts
+
+      - name: Create deployment directory and copy files
+        run: |
+          ssh -i ~/.ssh/id_rsa ${{ secrets.EC2_USERNAME }}@${{ secrets.YOLO_EC2_HOST_PROD }} "mkdir -p ~/yoloservice-deploy-prod"
+          scp -i ~/.ssh/id_rsa docker-compose.prod.yaml ${{ secrets.EC2_USERNAME }}@${{ secrets.YOLO_EC2_HOST_PROD }}:~/yoloservice-deploy-prod/docker-compose.yml
+
+      - name: Deploy to EC2
+        run: |
+          IMG_NAME=majedsaade${{ inputs.image }}
+          ssh -i ~/.ssh/id_rsa ${{ secrets.EC2_USERNAME }}@${{ secrets.YOLO_EC2_HOST_PROD }} << EOF
+
+          # Install Docker if not present
+          if ! command -v docker &> /dev/null; then
+            sudo apt-get update
+            sudo apt-get install -y docker.io docker-compose-plugin
+            sudo systemctl start docker
+            sudo systemctl enable docker
+            sudo usermod -aG docker \$USER
+          fi
+
+          # Navigate to deployment directory
+          cd ~/yoloservice-deploy-prod
+
+          # Cleanup old yolo.service
+          echo "Cleaning up old yolo.service..."
+          sudo systemctl disable --now yolo.service || true
+          sudo rm -f /etc/systemd/system/yolo.service || true
+          sudo systemctl daemon-reload
+
+          # Create environment file
+          cat > .env << EOL
+          IMG_NAME=majedsaade${{ inputs.image }}
+          ENVIRONMENT=production
+          STATUS_SERVER_PORT=8081
+          EOL
+
+          # Debug info
+          echo "=== Deployment Debug Info ==="
+          echo "Image from build workflow: \$IMG_NAME"
+          echo "Contents of .env file:"
+          cat .env
+          echo "Contents of docker-compose.yml:"
+          cat docker-compose.yml
+          echo "=== End Debug Info ==="
+
+          # Stop existing containers
+          sudo docker compose down --remove-orphans || true
+
+          # Login to Docker Hub
+          echo "${{ secrets.DOCKERHUB_TOKEN }}" | sudo docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+
+          # Pull latest image and start services
+          sudo -E docker compose pull
+          sudo -E docker compose up -d
+
+          # Cleanup old images
+          sudo docker image prune -f
+
+          echo "Deployment completed successfully!"
           EOF
-
-      - name: Clone or Pull Code on EC2
-        run: |
-          ssh yolo "if [ -d ~/YoloServiceFursa ]; then cd ~/YoloServiceFursa && git pull; else git clone ${REPO_URL} ~/YoloServiceFursa; fi"
-
-      - name: Run Deployment Script on EC2
-        run: |
-          ssh yolo "cd ~/YoloServiceFursa && bash deploy.sh"

@@ -13,6 +13,11 @@ torch.cuda.is_available = lambda: False
 
 app = FastAPI()
 
+from prometheus_fastapi_instrumentator import Instrumentator
+
+Instrumentator().instrument(app).expose(app)
+
+
 #hii
 
 UPLOAD_DIR = "uploads/original"
