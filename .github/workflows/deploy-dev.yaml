@@ -40,7 +40,7 @@ jobs:
 
       - name: Deploy to EC2
         run: |
-          IMG_NAME=majedsaade${{ inputs.image }}
+          IMG_NAME= ${{ inputs.image }}
           ssh -i ~/.ssh/id_rsa ${{ secrets.EC2_USERNAME }}@${{ secrets.YOLO_EC2_HOST_DEV }} << 'EOF'
           
           # Install Docker if not present
@@ -83,7 +83,7 @@ jobs:
 
           # Create environment file
           cat > .env << EOL
-          IMG_NAME=majedsaade${{ inputs.image }}
+          IMG_NAME= ${{ inputs.image }}
           ENVIRONMENT=development
           STATUS_SERVER_PORT=8081
           EOL
