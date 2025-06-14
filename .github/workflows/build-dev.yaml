@@ -28,7 +28,7 @@ jobs:
           img_name="${DOCKERHUB_USERNAME}/yoloservice_build_dev:${{ github.run_number }}"
           echo "Building Docker image: $img_name"
 
-          echo "image=$img_name" >> $GITHUB_OUTPUT
+          echo "image=/yoloservice_build_dev:${{ github.run_number }}" >> $GITHUB_OUTPUT
 
           docker build -t $img_name .
           docker push $img_name

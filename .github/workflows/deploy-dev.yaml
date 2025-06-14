@@ -40,8 +40,11 @@ jobs:
 
       - name: Deploy to EC2
         run: |
-          IMG_NAME= majedsaade/${{ inputs.image }}
-          ssh -i ~/.ssh/id_rsa ${{ secrets.EC2_USERNAME }}@${{ secrets.YOLO_EC2_HOST_DEV }} << 'EOF'
+          # Set image name without space after equals and ensure proper formatting
+          export IMG_NAME="${{ secrets.DOCKERHUB_USERNAME }}${{ inputs.image }}"
+          
+          # Use EOF without quotes to allow variable expansion
+          ssh -i ~/.ssh/id_rsa ${{ secrets.EC2_USERNAME }}@${{ secrets.YOLO_EC2_HOST_DEV }} << EOF
           
           # Install Docker if not present
           if ! command -v docker &> /dev/null; then
@@ -83,14 +86,14 @@ jobs:
 
           # Create environment file
           cat > .env << EOL
-          IMG_NAME= majedsaade/${{ inputs.image }}
+          IMG_NAME=${IMG_NAME}
           ENVIRONMENT=development
           STATUS_SERVER_PORT=8081
           EOL
 
           # Debug: Verify what we're working with
           echo "=== Deployment Debug Info ==="
-          echo "Image from build workflow: \$IMAGE"
+          echo "Image name: ${IMG_NAME}"
           echo "Contents of .env file:"
           cat .env
           echo "Contents of docker-compose.yml:"
