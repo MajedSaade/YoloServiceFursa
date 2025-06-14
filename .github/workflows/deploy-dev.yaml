@@ -37,13 +37,10 @@ jobs:
         run: |
           ssh -i ~/.ssh/id_rsa ${{ secrets.EC2_USERNAME }}@${{ secrets.YOLO_EC2_HOST_DEV }} "mkdir -p ~/yoloservice-deploy"
           scp -i ~/.ssh/id_rsa docker-compose.dev.yaml ${{ secrets.EC2_USERNAME }}@${{ secrets.YOLO_EC2_HOST_DEV }}:~/yoloservice-deploy/docker-compose.yml
-          # Copy otelcol config if it exists
-          if [ -f "otelcol-config.yaml" ]; then
-            scp -i ~/.ssh/id_rsa otelcol-config.yaml ${{ secrets.EC2_USERNAME }}@${{ secrets.YOLO_EC2_HOST_DEV }}:~/yoloservice-deploy/
-          fi
 
       - name: Deploy to EC2
         run: |
+          IMG_NAME=majedsaade${{ inputs.image }}
           ssh -i ~/.ssh/id_rsa ${{ secrets.EC2_USERNAME }}@${{ secrets.YOLO_EC2_HOST_DEV }} << 'EOF'
           
           # Install Docker if not present
