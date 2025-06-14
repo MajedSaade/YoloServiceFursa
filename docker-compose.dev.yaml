@@ -1,6 +1,6 @@
 services:
   yoloservice:
-    image: majedsaade/yoloservice_build_dev
+    image: ${IMG_NAME}
     container_name: yoloservice-dev
     env_file: .env
     ports:

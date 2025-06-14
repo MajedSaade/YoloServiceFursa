@@ -99,16 +99,16 @@ jobs:
           echo "Contents of docker-compose.yml:"
           cat docker-compose.yml
           echo "=== End Debug Info ==="
+          
+          # Stop existing containers
+          sudo docker compose down --remove-orphans || true
 
           # Login to Docker Hub
           echo "${{ secrets.DOCKERHUB_TOKEN }}" | sudo docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
 
-          # Stop existing containers
-          sudo docker compose down --remove-orphans 2>/dev/null || true
-
           # Pull latest image and start services
-          sudo docker compose pull
-          sudo docker compose up -d
+          sudo -E docker compose pull
+          sudo -E docker compose up -d
 
           # Cleanup old images
           sudo docker image prune -f
