@@ -1,8 +1,5 @@
 services:
   yoloservice:
-    build:
-      context: .
-      dockerfile: Dockerfile
     image: majedsaade/yoloservice_build_dev:latest
     container_name: yoloservice-dev
     env_file: .env
