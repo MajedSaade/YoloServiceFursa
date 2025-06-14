@@ -37,6 +37,7 @@ jobs:
         run: |
           ssh -i ~/.ssh/id_rsa ${{ secrets.EC2_USERNAME }}@${{ secrets.YOLO_EC2_HOST_DEV }} "mkdir -p ~/yoloservice-deploy"
           scp -i ~/.ssh/id_rsa docker-compose.dev.yaml ${{ secrets.EC2_USERNAME }}@${{ secrets.YOLO_EC2_HOST_DEV }}:~/yoloservice-deploy/docker-compose.yml
+          scp -i ~/.ssh/id_rsa otel-collector-config.yaml ${{ secrets.EC2_USERNAME }}@${{ secrets.YOLO_EC2_HOST_DEV }}:~/yoloservice-deploy/otel-collector-config.yaml
 
       - name: Deploy to EC2
         run: |
