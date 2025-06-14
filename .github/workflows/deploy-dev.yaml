@@ -91,17 +91,20 @@ jobs:
           STATUS_SERVER_PORT=8081
           EOL
 
-          # Debug info
+          # Debug: Verify what we're working with
           echo "=== Deployment Debug Info ==="
-          echo "Image from build workflow: ${{ inputs.image }}"
+          echo "Image from build workflow: \$IMAGE"
           echo "Contents of .env file:"
           cat .env
           echo "Contents of docker-compose.yml:"
           cat docker-compose.yml
           echo "=== End Debug Info ==="
-          
+
           # Stop existing containers
           sudo docker compose down --remove-orphans || true
+
+          # Force remove old otelcol container if it exists
+          sudo docker rm -f polybot-deploy-otelcol-1 || true
 
           # Login to Docker Hub
           echo "${{ secrets.DOCKERHUB_TOKEN }}" | sudo docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
@@ -114,9 +117,4 @@ jobs:
           sudo docker image prune -f
 
           echo "Deployment completed successfully!"
-          
-          # Show running containers
-          echo "Running containers:"
-          sudo docker ps
-          
           EOF
