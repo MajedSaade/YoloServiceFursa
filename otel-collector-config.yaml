@@ -1,6 +1,7 @@
 receivers:
   hostmetrics:
     collection_interval: 30s
+    root_path: /hostfs
     scrapers:
       cpu:
         metrics:
@@ -53,8 +54,14 @@ processors:
 exporters:
   prometheus:
     endpoint: "0.0.0.0:8889"
+    namespace: otel
+    send_timestamps: true
+    metric_expiration: 180m
 
 service:
+  telemetry:
+    logs:
+      level: "debug"
   pipelines:
     metrics:
       receivers: [hostmetrics]
