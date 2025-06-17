@@ -1,0 +1,28 @@
+services:
+  yoloservice:
+    image: ${IMG_NAME:-majedsaade/yoloservice_build_dev:latest}
+    container_name: yoloservice-dev
+    env_file: .env
+    ports:
+      - "8081:8081"
+    environment:
+      - YOLO_CONFIG_DIR=/app/.yolo-config
+    restart: unless-stopped
+
+
+  otelcol:
+    image: otel/opentelemetry-collector-contrib:latest
+    container_name: yoloservice-deploy-otelcol-1
+    ports:
+      - "8889:8889"
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otelcol/config.yaml
+      - /proc:/hostfs/proc:ro
+      - /sys:/hostfs/sys:ro
+      - /:/hostfs:ro
+    environment:
+      - HOST_PROC=/hostfs/proc
+      - HOST_SYS=/hostfs/sys
+    command: ["--config=/etc/otelcol/config.yaml"]
+    privileged: true
+    restart: unless-stopped
