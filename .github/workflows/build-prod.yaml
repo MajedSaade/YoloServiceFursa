@@ -42,5 +42,5 @@ jobs:
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
       EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
-      YOLO_EC2_HOST_PROD: ${{ secrets.YOLO_EC2_HOST }}
+      YOLO_EC2_HOST: ${{ secrets.YOLO_EC2_HOST }}
       EC2_USERNAME: ${{ secrets.EC2_USERNAME }}
