@@ -7,6 +7,8 @@ services:
       - "8081:8081"
     environment:
       - YOLO_CONFIG_DIR=/app/.yolo-config
+    restart: unless-stopped
+
 
   otelcol:
     image: otel/opentelemetry-collector-contrib:latest
