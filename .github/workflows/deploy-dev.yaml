@@ -101,11 +101,9 @@ jobs:
           cat docker-compose.yml
           echo "=== End Debug Info ==="
 
-          # Stop existing containers
-          sudo docker compose down --remove-orphans || true
+          # Stop and remove all running containers
+          sudo docker ps -aq | xargs -r sudo docker rm -f
 
-          # Force remove old otelcol container if it exists
-          sudo docker rm -f polybot-deploy-otelcol-1 || true
 
           # Login to Docker Hub
           echo "${{ secrets.DOCKERHUB_TOKEN }}" | sudo docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
