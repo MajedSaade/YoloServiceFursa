@@ -103,6 +103,9 @@ jobs:
 
           # Stop and remove all running containers
           sudo docker ps -aq | xargs -r sudo docker rm -f
+          
+          # Clean up unused Docker data to free space
+          sudo docker system prune -a -f --volumes
 
 
           # Login to Docker Hub
