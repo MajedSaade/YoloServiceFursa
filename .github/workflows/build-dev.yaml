@@ -6,6 +6,7 @@ on:
     branches:
       - dev
       - feature/containerization
+      - feature/dynamoDB
   workflow_dispatch:
 
 jobs:
