@@ -88,6 +88,7 @@ jobs:
           # Create environment file
           cat > .env << EOL
           IMG_NAME=${IMG_NAME}
+          STORAGE_TYPE=sqlite
           ENVIRONMENT=development
           STATUS_SERVER_PORT=8081
           EOL
