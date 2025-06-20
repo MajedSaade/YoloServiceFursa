@@ -1,6 +1,7 @@
 import boto3
 import os
 from datetime import datetime
+from decimal import Decimal
 from boto3.dynamodb.conditions import Attr
 from storage.base import StorageInterface
 
@@ -9,6 +10,16 @@ class DynamoDBStorage(StorageInterface):
         if table_name is None:
             table_name = os.getenv("DYNAMODB_TABLE_NAME", "Predictions")
         self.table = boto3.resource("dynamodb").Table(table_name)
+
+    def _convert_floats_to_decimal(self, obj):
+        """Convert float values to Decimal for DynamoDB compatibility"""
+        if isinstance(obj, float):
+            return Decimal(str(obj))
+        elif isinstance(obj, dict):
+            return {k: self._convert_floats_to_decimal(v) for k, v in obj.items()}
+        elif isinstance(obj, list):
+            return [self._convert_floats_to_decimal(v) for v in obj]
+        return obj
 
     async def save_prediction(self, uid, original_image, predicted_image):
         self.table.put_item(Item={
@@ -20,11 +31,14 @@ class DynamoDBStorage(StorageInterface):
         })
 
     async def save_detection(self, prediction_uid, label, score, box):
+        # Convert score to Decimal
+        decimal_score = Decimal(str(score))
+        
         self.table.update_item(
             Key={"uid": prediction_uid},
             UpdateExpression="SET detection_objects = list_append(detection_objects, :new_item)",
             ExpressionAttributeValues={
-                ":new_item": [{"label": label, "score": score, "box": box}]
+                ":new_item": [{"label": label, "score": decimal_score, "box": box}]
             }
         )
 
@@ -39,13 +53,16 @@ class DynamoDBStorage(StorageInterface):
         return [{"uid": item["uid"], "timestamp": item.get("timestamp")} for item in resp["Items"]]
 
     async def get_predictions_by_score(self, min_score):
+        # Convert min_score to Decimal for comparison
+        decimal_min_score = Decimal(str(min_score))
+        
         resp = self.table.scan(
             FilterExpression=Attr("detection_objects").exists()
         )
         results = []
         for item in resp["Items"]:
             for det in item["detection_objects"]:
-                if det["score"] >= min_score:
+                if det["score"] >= decimal_min_score:
                     results.append({"uid": item["uid"], "timestamp": item.get("timestamp")})
                     break
         return results
