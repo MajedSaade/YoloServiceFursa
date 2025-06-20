@@ -105,13 +105,13 @@ jobs:
           ENVIRONMENT=development
           STATUS_SERVER_PORT=8081
           AWS_DEFAULT_REGION=us-west-2
-          DYNAMODB_TABLE_NAME=YoloService-Predictions-Dev
+          DYNAMODB_TABLE_NAME=Predictions
           EOL
 
           # Create DynamoDB table if it doesn't exist
           echo "Creating DynamoDB table if it doesn't exist..."
           aws dynamodb create-table \
-            --table-name YoloService-Predictions-Dev \
+            --table-name Predictions \
             --attribute-definitions \
               AttributeName=uid,AttributeType=S \
             --key-schema \
