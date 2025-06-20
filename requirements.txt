@@ -9,3 +9,6 @@ pillow>=9.5.0
 ultralytics>=8.0.0
 python-multipart>=0.0.6
 prometheus-fastapi-instrumentator
+
+# AWS SDK for DynamoDB
+boto3>=1.26.0

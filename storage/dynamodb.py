@@ -1,14 +1,19 @@
 import boto3
+import os
+from datetime import datetime
 from boto3.dynamodb.conditions import Attr
 from storage.base import StorageInterface
 
 class DynamoDBStorage(StorageInterface):
-    def __init__(self, table_name="Predictions"):
+    def __init__(self, table_name=None):
+        if table_name is None:
+            table_name = os.getenv("DYNAMODB_TABLE_NAME", "Predictions")
         self.table = boto3.resource("dynamodb").Table(table_name)
 
     async def save_prediction(self, uid, original_image, predicted_image):
         self.table.put_item(Item={
             "uid": uid,
+            "timestamp": datetime.utcnow().isoformat(),
             "original_image": original_image,
             "predicted_image": predicted_image,
             "detection_objects": []
