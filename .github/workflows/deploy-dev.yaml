@@ -107,13 +107,13 @@ jobs:
           SQS_URL=https://sqs.us-west-2.amazonaws.com/228281126655/majed-polybot-chat-messages-dev
           POLYBOT_CALLBACK_URL=http://polybot:8443/predictions
           AWS_DEFAULT_REGION=us-west-2
-          DYNAMODB_TABLE_NAME=Predictions
+          DYNAMODB_TABLE_NAME=Predictions-Dev
           EOL
 
           # Create DynamoDB table if it doesn't exist
           echo "Creating DynamoDB table if it doesn't exist..."
           aws dynamodb create-table \
-            --table-name Predictions \
+            --table-name Predictions-Dev \
             --attribute-definitions \
               AttributeName=uid,AttributeType=S \
             --key-schema \
